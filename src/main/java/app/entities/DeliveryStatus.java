@@ -1,4 +1,8 @@
 package app.entities;
 
-public class DeliveryStatus {
+public enum DeliveryStatus {
+    PENDING,
+    IN_TRANSIT,
+    DELIVERED,
+    RETURNED
 }
