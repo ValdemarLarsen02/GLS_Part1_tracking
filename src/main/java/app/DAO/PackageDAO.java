@@ -1,18 +1,13 @@
 package app.DAO;
 
-
 import app.config.HibernateConfig;
 import app.entities.DeliveryStatus;
 import app.entities.Package;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
-//Class to perform CRUD operations
-@RequiredArgsConstructor
 public class PackageDAO {
     private final EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
 
@@ -22,7 +17,7 @@ public class PackageDAO {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            em.persist(newPackage);
+            em.persist(newPackage);  // JPA persist-metode
             tx.commit();
         } catch (Exception e) {
             if (tx.isActive()) {
@@ -34,7 +29,7 @@ public class PackageDAO {
         }
     }
 
-
+    // Hent en pakke via trackingNumber
     public Package getPackage(String trackingNumber) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -50,37 +45,31 @@ public class PackageDAO {
     }
 
 
+    // Hent alle pakker
     public List<Package> getAllPackages() {
-            EntityManager em = emf.createEntityManager();
-            try {
-                return em.createQuery("SELECT p FROM Package p", Package.class).getResultList();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                em.close();
-            }
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery("FROM Package", Package.class).getResultList();
+        } finally {
+            em.close();
+        }
     }
 
+    // Opdater en pakkes leveringsstatus
     public void updateDeliveryStatus(String trackingNumber, DeliveryStatus newStatus) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-
-            int updatedRows = em.createQuery("UPDATE Package p SET p.deliveryStatus = :newStatus WHERE p.trackingNumber = :trackingNumber")
-                    .setParameter("newStatus", newStatus)  // Enum direkte
-                    .setParameter("trackingNumber", trackingNumber)
-                    .executeUpdate();
-
-            tx.commit();
-
-
-            if (updatedRows > 0) {
+            Package pkg = em.find(Package.class, trackingNumber);
+            if (pkg != null) {
+                pkg.setDeliveryStatus(newStatus);
+                em.merge(pkg);  // Brug merge til at opdatere objektet i databasen
+                tx.commit();
                 System.out.println("Pakke med tracking number " + trackingNumber + " opdateret til status: " + newStatus);
             } else {
                 System.out.println("Ingen pakke fundet med tracking number: " + trackingNumber);
             }
-
         } catch (Exception e) {
             if (tx.isActive()) {
                 tx.rollback();
@@ -91,22 +80,27 @@ public class PackageDAO {
         }
     }
 
-
+    // Fjern en pakke fra databasen
     public void removePackage(String trackingNumber) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            em.remove(getPackage(trackingNumber));
-            tx.commit();
+            Package pkg = em.find(Package.class, trackingNumber);
+            if (pkg != null) {
+                em.remove(pkg);  // JPA remove-metode
+                tx.commit();
+                System.out.println("Pakke med tracking number " + trackingNumber + " er blevet slettet.");
+            } else {
+                System.out.println("Ingen pakke fundet med tracking number: " + trackingNumber);
+            }
         } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
             throw new RuntimeException(e);
         } finally {
             em.close();
         }
     }
-
-
-
-
 }

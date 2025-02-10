@@ -13,7 +13,7 @@ public class Main {
 
         //Laver vores pakke
         Package newPackage = new Package();
-        newPackage.setTrackingNumber("va881231231211");
+        newPackage.setTrackingNumber("ba88123123121");
         newPackage.setSenderName("Afsender 1");
         newPackage.setReceiverName("Modtager 1");
         newPackage.setDeliveryStatus(DeliveryStatus.PENDING);
@@ -23,19 +23,22 @@ public class Main {
         //packageDAO.save(newPackage); // gemmer til databasen
 
 
-        Package foundPackage = packageDAO.getPackage("va88123123121");
+        Package foundPackage = packageDAO.getPackage("ba88123123121");
         System.out.println("Fundet pakke: " + (foundPackage != null ? foundPackage.toString() : "Ikke fundet!"));
 
 
         //Henter en liste med alle pakker
         List<Package> packages = packageDAO.getAllPackages();
 
+
+        System.out.println("Alle pakker: " + packages);
+
         DeliveryStatus newStatus = DeliveryStatus.DELIVERED; // Ny ENUM-status
 
         // Opdater status
-        packageDAO.updateDeliveryStatus("va881231231211", newStatus);
+        //packageDAO.updateDeliveryStatus("va881231231211", newStatus);
 
-        packageDAO.removePackage("va88123123121");
+        //packageDAO.removePackage("va88123123121");
 
 
     }
