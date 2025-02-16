@@ -40,11 +40,14 @@ public class HibernateConfig {
     private static void getAnnotationConfiguration(Configuration configuration) {
         // Manuelt tilføje hver entity klasse
         configuration.addAnnotatedClass(app.entities.Package.class);
+        configuration.addAnnotatedClass(app.entities.Shipment.class);
+        configuration.addAnnotatedClass(app.entities.Location.class);
         configuration.addAnnotatedClass(app.entities.DeliveryStatus.class);  // Hvis du har en DeliveryStatus enum, skal du også registrere den
 
         // Alternativt: Scanne en pakke (hvis Hibernate versionen understøtter det)
         // configuration.addPackage("app.entities");
     }
+
 
 
     private static EntityManagerFactory createEMF(boolean forTest) {

@@ -35,7 +35,9 @@ public class PackageDAO {
         try {
             return em.createQuery("SELECT p FROM Package p WHERE p.trackingNumber = :trackingNumber", Package.class)
                     .setParameter("trackingNumber", trackingNumber)
-                    .getSingleResult();
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
         } catch (Exception e) {
             e.printStackTrace();
             return null; // Returner null, hvis pakken ikke findes
@@ -43,6 +45,7 @@ public class PackageDAO {
             em.close();
         }
     }
+
 
 
     // Hent alle pakker
@@ -61,24 +64,28 @@ public class PackageDAO {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            Package pkg = em.find(Package.class, trackingNumber);
+            Package pkg = em.createQuery("SELECT p FROM Package p WHERE p.trackingNumber = :trackingNumber", Package.class)
+                    .setParameter("trackingNumber", trackingNumber)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
             if (pkg != null) {
                 pkg.setDeliveryStatus(newStatus);
-                em.merge(pkg);  // Brug merge til at opdatere objektet i databasen
+                em.merge(pkg);
                 tx.commit();
-                System.out.println("Pakke med tracking number " + trackingNumber + " opdateret til status: " + newStatus);
+                System.out.println("Pakke opdateret: " + pkg);
             } else {
                 System.out.println("Ingen pakke fundet med tracking number: " + trackingNumber);
             }
         } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
+            if (tx.isActive()) tx.rollback();
             e.printStackTrace();
         } finally {
             em.close();
         }
     }
+
 
     // Fjern en pakke fra databasen
     public void removePackage(String trackingNumber) {
